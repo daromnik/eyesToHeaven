@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.UUID;
 
 public class DetectEye {
 
@@ -33,9 +34,12 @@ public class DetectEye {
         init();
     }
 
+    /**
+     *
+     */
     private void init() {
 
-        URL resource = classloader.getResource("images/pic3.jpg");
+        URL resource = classloader.getResource("images/pic2.jpg");
         if (resource != null) {
             File file = new File(resource.getFile());
             if (file.exists()) {
@@ -58,14 +62,25 @@ public class DetectEye {
         }
     }
 
+    /**
+     * Возвращает картинку в виде массива байтов
+     * @return ByteArrayInputStream
+     */
     public ByteArrayInputStream getOriginImageStream() {
         MatOfByte buffer = new MatOfByte();
         Imgcodecs.imencode(".jpg", originMat , buffer);
         return new ByteArrayInputStream(buffer.toArray());
     }
 
-    private void detect(Mat originMat)
-    {
+    /**
+     * Определение на картинке глаз,
+     * выделение их в зеленые прямоугольники,
+     * сохранение этих областей в файлы.
+     *
+     * @param originMat Mat
+     * @throws IOException
+     */
+    private void detect(Mat originMat) throws IOException {
         MatOfRect faces = new MatOfRect();
         Mat grayFrame = new Mat();
 
@@ -103,9 +118,17 @@ public class DetectEye {
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(originMat, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
+            BufferedImage dest = originImage.getSubimage(facesArray[i].x, facesArray[i].y, facesArray[i].width, facesArray[i].height);
+            UUID uuid = UUID.randomUUID(); // рандомное название картинки
+            File fileForEye = new File("out/" + uuid.toString() + ".png");
+            ImageIO.write(dest, "PNG", fileForEye);
         }
     }
 
+    /**
+     * Загрузка обучаещего классификатора для глаз
+     * @param classifierPath String
+     */
     private void loadClassifier(String classifierPath)
     {
         String resource = classloader.getResource(classifierPath).getPath();

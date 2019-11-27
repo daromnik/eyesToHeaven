@@ -19,6 +19,9 @@ public class Form {
         this.detectEye = detectEye;
     }
 
+    /**
+     * Создание экрана куда выведется картинка с обведенными глазами
+     */
     public void createForm() {
 
         ByteArrayInputStream byteArrayInputStream = detectEye.getOriginImageStream();
